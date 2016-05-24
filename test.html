@@ -1,0 +1,18 @@
+<script>
+
+
+var exampleSocket = new WebSocket("ws://localhost:6789/socketserver", "fanout-demo");
+
+function send_random(){
+    exampleSocket.send(JSON.stringify({"arg":Math.floor(Math.random() * 3 + 1)}));
+}
+
+exampleSocket.onmessage = function (event) {
+  console.log(JSON.parse(event.data));
+
+  setTimeout(send_random, 1000)
+};
+exampleSocket.onopen = function (event) {
+  send_random();
+};
+</script>
