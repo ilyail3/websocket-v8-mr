@@ -1,18 +1,39 @@
 <script>
+var exampleSocket = null;
+var timeout = null;
 
+function connect(){
+    exampleSocket = new WebSocket("ws://localhost:6789/socketserver", "fanout-demo");
 
-var exampleSocket = new WebSocket("ws://localhost:6789/socketserver", "fanout-demo");
+    function send_random(){
+        timeout = null;
+        exampleSocket.send(JSON.stringify({"arg":Math.floor(Math.random() * 3 + 1)}));
+    }
 
-function send_random(){
-    exampleSocket.send(JSON.stringify({"arg":Math.floor(Math.random() * 3 + 1)}));
+    exampleSocket.onmessage = function (event) {
+        console.log(JSON.parse(event.data));
+
+        if(timeout != null){
+            clearTimeout(timeout);
+            timeout = null;
+        }
+
+        timeout = setTimeout(send_random, 1000);
+    };
+
+    exampleSocket.onopen = function (event) {
+        send_random();
+    };
+
+    exampleSocket.onclose = function(){
+        if(timeout != null){
+            clearTimeout(timeout);
+            timeout = null;
+        }
+
+        connect();
+    };
 }
 
-exampleSocket.onmessage = function (event) {
-  console.log(JSON.parse(event.data));
-
-  setTimeout(send_random, 1000)
-};
-exampleSocket.onopen = function (event) {
-  send_random();
-};
+connect();
 </script>
